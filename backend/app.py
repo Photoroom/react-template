@@ -12,6 +12,8 @@ import base64
 from flask_cors import CORS
 import uuid
 from flask import send_from_directory
+import time
+import os
 
 model = keras.models.load_model('multi-keras.h5')
 
@@ -58,6 +60,16 @@ def send_js(path):
     return send_from_directory('images', path)
 
 
+@app.route('/recent_images')
+def view_recent_images():
+    """
+    Endpoints returning recently uploaded images from the community
+    """
+    paths = get_most_recent_photos()
+    
+    return jsonify({'paths': paths}), 200
+
+
 def readb64(encoded_data):
     nparr = np.fromstring(base64.b64decode(encoded_data), np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -78,10 +90,19 @@ def process_upload(data):
     combined, _ = add_pink_hair(img)
 
     combined = (combined * 255.0).astype(np.uint8)
-    path = 'images/{}.jpg'.format(uuid.uuid4())
+    # We are using the timestamp ms as a sorting key to show the post recent
+    # pictures taken to our frontend, and we use a uuid4 as a unique identifier
+    path = 'images/{}{}.jpg'.format(time.time(), uuid.uuid4())
     cv2.imwrite(path, combined)
 
     return jsonify({'path': '/' + path})
+
+    
+def get_most_recent_photos(directory='images', count=10):
+    files = [os.path.join(directory, f) for f in os.listdir('images') if os.path.isfile(os.path.join('images', f))]
+    files.sort(reverse=True)
+    return files[0:count]
+    
 
 
 graph = None
