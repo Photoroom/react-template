@@ -60,13 +60,11 @@ def send_js(path):
     return send_from_directory('images', path)
 
 
-@app.route('/healthcheck')
-def view_healthcheck():
-
-    return jsonify({'status': 'ok photoroom x aricc', "time": time.time()* 1000})
-
 @app.route('/recent_images')
 def view_recent_images():
+    """
+    Endpoints returning recently uploaded images from the community
+    """
     paths = get_most_recent_photos()
     
     return jsonify({'paths': paths}), 200
@@ -100,10 +98,11 @@ def process_upload(data):
     return jsonify({'path': '/' + path})
 
     
-def get_most_recent_photos(directory='images'):
+def get_most_recent_photos(directory='images', count=10):
     files = [os.path.join(directory, f) for f in os.listdir('images') if os.path.isfile(os.path.join('images', f))]
     files.sort(reverse=True)
-    return files
+    return files[0:count]
+    
 
 
 graph = None

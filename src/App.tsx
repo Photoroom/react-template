@@ -48,7 +48,7 @@ function App() {
 
 
   useEffect(() => {
-    // Update the document title using the browser API
+    // Fetch recent images on mount
     (async function () {
       getRecentImages()
     })()
@@ -81,7 +81,7 @@ function App() {
 
   }
 
-  // Take a selected image from the disk (<input type=file) and upload it to the server.
+  // Take a selected image from the disk (<input type=file/>) and upload it to the server.
   // Then update the recent images list state.
   let onImageSelectedFromDisk = (file: File) => {
     loadImage(
