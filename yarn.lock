@@ -2185,6 +2185,13 @@
   dependencies:
     "@types/react" "*"
 
+"@types/react-html5-camera-photo@^1.5.1":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@types/react-html5-camera-photo/-/react-html5-camera-photo-1.5.1.tgz#7585ca88a52a80035b743cd0df8a236530fe6e0a"
+  integrity sha512-5kJwACiD+fIErQiS6bVD7+d4b9lnECbfWqbDTTAcDyBDRAXDoBEqRCfRjlTYnhNIkkWJA1Ow3s8xCuLKvC1IkQ==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react-is@^16.7.1 || ^17.0.0":
   version "17.0.3"
   resolved "https://registry.yarnpkg.com/@types/react-is/-/react-is-17.0.3.tgz#2d855ba575f2fc8d17ef9861f084acc4b90a137a"
@@ -7546,6 +7553,11 @@ jsesc@~0.5.0:
   resolved "https://registry.npmjs.org/jsesc/-/jsesc-0.5.0.tgz"
   integrity sha1-597mbjXW/Bb3EP6R1c9p9w8IkR0=
 
+jslib-html5-camera-photo@3.1.8:
+  version "3.1.8"
+  resolved "https://registry.yarnpkg.com/jslib-html5-camera-photo/-/jslib-html5-camera-photo-3.1.8.tgz#25598735e1cd7dd82634b2c31a537bef6f3ebff1"
+  integrity sha512-7vBcVyLUnnP37vKzOxzIFtpaS8I8z+XMtyOlNFm+BGW089/Yw1hROsH2MdbIjCDRWfD+DnMC/WCNmW3LO2chrQ==
+
 json-parse-better-errors@^1.0.1, json-parse-better-errors@^1.0.2:
   version "1.0.2"
   resolved "https://registry.npmjs.org/json-parse-better-errors/-/json-parse-better-errors-1.0.2.tgz"
@@ -10416,6 +10428,13 @@ react-error-overlay@^6.0.9:
   version "6.0.9"
   resolved "https://registry.npmjs.org/react-error-overlay/-/react-error-overlay-6.0.9.tgz"
   integrity sha512-nQTTcUu+ATDbrSD1BZHr5kgSD4oF8OFjxun8uAaL8RwPBacGBNPf/yAuVVdx17N8XNzRDMrZ9XcKZHCjPW+9ew==
+
+react-html5-camera-photo@^1.5.5:
+  version "1.5.5"
+  resolved "https://registry.yarnpkg.com/react-html5-camera-photo/-/react-html5-camera-photo-1.5.5.tgz#dbc81c40fd3d037ac223ed177edea519264895e4"
+  integrity sha512-e6vw0FJjyoxR1nJgV2hXfLKJYBmpg8+GG5KgwPQEsr8IJFgFKUM2xHMEQYorTPchsKvwxzUXJEoOiroxWw9bwA==
+  dependencies:
+    jslib-html5-camera-photo "3.1.8"
 
 react-is@^16.7.0, react-is@^16.8.1:
   version "16.13.1"

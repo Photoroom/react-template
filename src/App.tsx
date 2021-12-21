@@ -1,10 +1,12 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import './App.css';
 import AddButton from './components/AddButton';
+import CameraView from './components/CameraView';
 import loadImage, { LoadImageResult } from 'blueimp-load-image';
 import { API_URL } from './Constants';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
+import Camera from 'react-html5-camera-photo';
 
 
 function App() {
@@ -37,7 +39,32 @@ function App() {
     
   },[]);
 
-  let uploadImageToServer = (file: File) => {
+  const uploadImageToServerBis = async (imageBase64: string) => {
+    let data = {
+      b64_img: imageBase64,
+    
+    }
+    
+    const response = await fetch(API_URL + '/upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (response.status >= 400 && response.status < 600) {
+      throw new Error("Bad response from server");
+    }
+
+    const result = await response.json();
+    const imagePath = API_URL + result.path
+    setResult(imagePath)
+
+  }
+
+  let onImageSelectedFromDisk = (file: File) => {
     loadImage(
       file,
       {
@@ -46,28 +73,32 @@ function App() {
         canvas: true
       })
       .then(async (imageData: LoadImageResult) => {
+        
         let image = imageData.image as HTMLCanvasElement
 
         let imageBase64 = image.toDataURL("image/png")
-        let data = {
-          b64_img: imageBase64,
-        }
-        const response = await fetch(API_URL + '/upload', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify(data)
-        });
+        // let data = {
+        //   b64_img: imageBase64,
+        
+        // }
+        
+        // const response = await fetch(API_URL + '/upload', {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //     'Accept': 'application/json',
+        //   },
+        //   body: JSON.stringify(data)
+        // });
 
-        if (response.status >= 400 && response.status < 600) {
-          throw new Error("Bad response from server");
-        }
+        // if (response.status >= 400 && response.status < 600) {
+        //   throw new Error("Bad response from server");
+        // }
 
-        const result = await response.json();
-        const imagePath = API_URL + result.path
-        setResult(imagePath)
+        // const result = await response.json();
+        // const imagePath = API_URL + result.path
+        // setResult(imagePath)
+        await uploadImageToServerBis(imageBase64)
         
       })
 
@@ -78,13 +109,16 @@ function App() {
 
   let onImageAdd = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      uploadImageToServer(e.target.files[0])
+      onImageSelectedFromDisk(e.target.files[0])
     } else {
       console.error("No file was picked")
     }
   }
 
-
+  const handleTakePhoto = (imageBase64: string) => {
+    uploadImageToServerBis(imageBase64)
+  }
+// return (<CameraView onPictureTaken={handleTakePhoto}/>)
 
   return (
     <div className="App">
