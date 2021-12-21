@@ -1,50 +1,69 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import './App.css';
 import AddButton from './components/AddButton';
-import CameraView from './components/CameraView';
+import RecentImages from './components/RecentImages';
 import loadImage, { LoadImageResult } from 'blueimp-load-image';
 import { API_URL } from './Constants';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
+import CameraView from './components/CameraView';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+
+
+import { styled } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
 import Camera from 'react-html5-camera-photo';
 
+// Got that as a view wrapper to center elements
+// from the MUI docuementation.
+// Sorry but in three hours, that's what you get :)
+const Item = styled(Paper)(({ theme }) => ({
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: theme.palette.text.secondary,
+}));
 
 function App() {
-  const [result, setResult] = useState<string | null>(null)
+  const [cameraModeEnabled, setCameraModeEnabled] = useState<boolean>(false)
   const [recentImages, setRecentImages] = useState<string[]>([])
-  
-  
+
+  // Fetch recently uploaded images from the community
+  let getRecentImages = async () => {
+    const response = await fetch(API_URL + '/recent_images', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error("Bad response from server");
+    }
+    const data = await response.json();
+    setRecentImages(data.paths);    
+  }
+
+
   useEffect(() => {
     // Update the document title using the browser API
-    (async function ()  {
-      const response = await fetch(API_URL + '/recent_images', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      });    
-  
-      if (response.status !== 200) {
-        throw new Error("Bad response from server");
-      }
-  
-      const data = await response.json();
-      
-      setRecentImages(data.paths);
-      
-      
+    (async function () {
+      getRecentImages()
     })()
 
-    
-  },[]);
 
-  const uploadImageToServerBis = async (imageBase64: string) => {
+  }, []);
+
+  // Upload an base64 image string to the server and return the unserialized
+  // json response.
+  const uploadImageToServer = async (imageBase64: string) => {
     let data = {
       b64_img: imageBase64,
-    
+
     }
-    
+
     const response = await fetch(API_URL + '/upload', {
       method: 'POST',
       headers: {
@@ -58,12 +77,12 @@ function App() {
       throw new Error("Bad response from server");
     }
 
-    const result = await response.json();
-    const imagePath = API_URL + result.path
-    setResult(imagePath)
+    return response.json();
 
   }
 
+  // Take a selected image from the disk (<input type=file) and upload it to the server.
+  // Then update the recent images list state.
   let onImageSelectedFromDisk = (file: File) => {
     loadImage(
       file,
@@ -73,33 +92,12 @@ function App() {
         canvas: true
       })
       .then(async (imageData: LoadImageResult) => {
-        
+
         let image = imageData.image as HTMLCanvasElement
 
         let imageBase64 = image.toDataURL("image/png")
-        // let data = {
-        //   b64_img: imageBase64,
-        
-        // }
-        
-        // const response = await fetch(API_URL + '/upload', {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //     'Accept': 'application/json',
-        //   },
-        //   body: JSON.stringify(data)
-        // });
-
-        // if (response.status >= 400 && response.status < 600) {
-        //   throw new Error("Bad response from server");
-        // }
-
-        // const result = await response.json();
-        // const imagePath = API_URL + result.path
-        // setResult(imagePath)
-        await uploadImageToServerBis(imageBase64)
-        
+        await uploadImageToServer(imageBase64)
+        await getRecentImages()
       })
 
       .catch(error => {
@@ -115,32 +113,40 @@ function App() {
     }
   }
 
-  const handleTakePhoto = (imageBase64: string) => {
-    uploadImageToServerBis(imageBase64)
+  // Callback function for selfie shot using the user's camera.
+  // The image is uploaded to the server and the recent images list is updated.
+  const handleTakePhoto = async(imageBase64: string) => {
+    await uploadImageToServer(imageBase64)
+    await getRecentImages()
+    setCameraModeEnabled(false)
   }
-// return (<CameraView onPictureTaken={handleTakePhoto}/>)
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        {!result && <AddButton onImageAdd={onImageAdd} />}
-        {!result && <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
-          {recentImages.map((img_url) => (
-            <ImageListItem key={img_url}>
-              <img
-                src={`${API_URL+"/"+img_url}`}
-                srcSet={`${API_URL+"/"+img_url}`} 
-                alt={img_url}
-                loading="lazy"
-              />
-            </ImageListItem>
-          ))}
-        </ImageList>}
-        {result && <img src={result} width={300} alt="result from the API" />}
-      </header>
 
-    </div>
-  );
+  if (cameraModeEnabled === true) {
+    return <CameraView onPictureTaken={handleTakePhoto} />
+  } else {
+
+    // It's been a long time I did not touch a grid system so here is the best I could do 
+    // in a few minutes.
+    return (
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <Item>
+            <h1>Welcome to Photoroom Hair Styler</h1>
+            <Stack direction="row" justifyContent="center">
+              <Button variant="contained" onClick={() => {
+                setCameraModeEnabled(true)
+              }}>Take a selfie</Button>
+              <AddButton onImageAdd={onImageAdd}/>
+            </Stack>
+            <Stack direction="row" justifyContent="center">
+              <RecentImages images={recentImages} API_URL={API_URL} />
+            </Stack>
+          </Item>
+        </Grid>
+      </Grid>
+    );
+  }
 }
 
 export default App;
